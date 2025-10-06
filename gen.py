@@ -11,6 +11,12 @@ def sqandmult(a,b,p):
 	return c
 
 def pmns():
+	#while(n)
+	#while(lambda)
+	#test
+	#if 2n|lambda|racineNemep > phi :  n++
+	#PSIZE 2048
+	# p = random_prime(2**PSIZE)
 	p = 2**255 - 19
 	n = 5
 	lambd = 2
@@ -18,7 +24,6 @@ def pmns():
 	K = GF(p)
 	pol = PolynomialRing(K, "X")
 	X = pol("X")
-	E = X**n - 2
 	E = ZZ["X"](f"X^{n}-{lambd}")
 	Xp = sqandmult(X,p,E)
 	d, u, v = xgcd((Xp-X)%E, E)
