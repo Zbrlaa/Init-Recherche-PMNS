@@ -1,5 +1,8 @@
 from sage.all import *
 from random import *
+	
+PSIZE = 2048
+
 
 def sqandmult(a,b,p):
 	c = 1
@@ -8,70 +11,92 @@ def sqandmult(a,b,p):
 			c = (c*a)%p
 		a = (a*a)%p
 		b = b >> 1
+
 	return c
 
+
 def pmns():
-	#while(n)
-	#while(lambda)
-	#test
-	#if 2n|lambda|racineNemep > phi :  n++
-	#PSIZE 2048
-	# p = random_prime(2**PSIZE)
-	p = 2**255 - 19
-	n = 5
-	lambd = 2
+	p = random_prime(2**PSIZE)
+	n = floor(log(p,2)/64)+1
 	phi = 2**64
-	K = GF(p)
-	pol = PolynomialRing(K, "X")
-	X = pol("X")
-	E = ZZ["X"](f"X^{n}-{lambd}")
-	Xp = sqandmult(X,p,E)
-	d, u, v = xgcd((Xp-X)%E, E)
-	gamma = -d[0]
-	tab = [[-(gamma)**j]+[1 if i==j else 0 for i in range(1,n)] for j in range(1,n)]
-	tab = [[p] + [0 for _ in range(n-1)]] + tab
-	B = matrix(ZZ, tab).LLL()
-	# print(B)
-	if 2*n*abs(lambd)*B.norm(1) < phi :
-		rho = int(B.norm(1) - 1)
-	print(p)
+	lambd_max = 200
 
-	M = 0
-	for T in B :
-		M = T if T[0]%2 else M
-		break
-	
+	while(True) :
+		print(f"n : {n}")
+		lambd = 2
 
-	M = ZZ["X"](list(M))
+		while(2*n*abs(lambd)*p**(1/n) < phi and lambd < lambd_max) :
+			K = GF(p)
+			pol = PolynomialRing(K, "X")
+			X = pol("X")
+			E = ZZ["X"](f"X^{n}-{lambd}")
+			Xp = sqandmult(X,p,E)
+			d = xgcd((Xp-X)%E, E)[0]
 
-	dM, uM, vM = xgcd(M, E)
-	dM = int(dM)
-	dm1 = pow(dM, -1, phi)
+			#pas de fact commun
+			if d == 1 or d[0]==0 :
+				lambd += 2
+				continue
 
-	Mm1 = dm1 * uM%phi
-	Mm1 = ZZ["X"](Mm1)
-	print(f"M-1(X)={Mm1}")
+			gamma = int(-d[0]%p)
+			
+			Bmat = matrix(ZZ,n,n)
+			Bmat[0,0] = p
+			for i in range(1,n):
+				Bmat[i,0] = -gamma**i
+				Bmat[i,i] = 1
+			B = Bmat.LLL()
 
-	coeffs_A = [randrange(-rho+1,rho) for _ in range(n)]
-	A = ZZ["X"](coeffs_A)
-	print(f"A(X)={A}")
-	coeffs_B = [randrange(-rho+1,rho) for _ in range(n)]
-	B = ZZ["X"](coeffs_B)
-	print(f"B(X)={B}")
+			Bn = B.norm(1)
+			if 2*n*abs(lambd)*Bn < phi :
+				rho = int(Bn - 1)
+				print(f"Rho : {rho}")
 
-	gamma = int(gamma)
+			#Echec calcul rho
+			else :
+				lambd += 2
+				continue
 
-	C = (A*B)%E
-	print(f"C(X)={C}")
+			M = None
+			for T in B:
+				if T[0] % 2:
+					M = T
+					break
 
-	Q = ((C*Mm1)%E)%phi
-	print(f"Q(X)={Q}")
+			M = ZZ["X"](list(M))
 
-	Cp = (C - (Q*M)%E)/phi
-	Cp = ZZ["X"](Cp)
-	print(f"C'(X)={Cp}")
+			dM, uM, _ = xgcd(M, E)
+			dM = int(dM)
+			dm1 = pow(dM, -1, phi)
 
-	result = (Cp(gamma)%p == (A(gamma)*B(gamma)*pow(phi,-1,p))%p)
-	print(f"Result : {result}")
+			Mm1 = dm1 * uM%phi
+			Mm1 = ZZ["X"](Mm1)
+			print(f"M-1(X)={Mm1}")
+
+			coeffs_A = [randrange(-rho+1,rho) for _ in range(n)]
+			coeffs_B = [randrange(-rho+1,rho) for _ in range(n)]
+			A = ZZ["X"](coeffs_A)
+			B = ZZ["X"](coeffs_B)
+			print(f"A(X)={A}")
+			print(f"B(X)={B}")
+
+			gamma = int(gamma)
+
+			C = (A*B)%E
+			print(f"C(X)={C}")
+
+			Q = ((C*Mm1)%E)%phi
+			print(f"Q(X)={Q}")
+
+			Cp = (C - (Q*M)%E)/phi
+			Cp = ZZ["X"](Cp)
+			print(f"C'(X)={Cp}")
+
+			result = (Cp(gamma)%p == (A(gamma)*B(gamma)*pow(phi,-1,p))%p)
+			print(f"Verif pour n({n}) et lambda({lambd}): {result}")
+			
+			return
+		
+		n += 1
 
 pmns()
