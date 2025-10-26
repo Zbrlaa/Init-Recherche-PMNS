@@ -1,8 +1,6 @@
 from sage.all import *
 from random import *
 	
-PSIZE = 2048
-
 
 def sqandmult(a,b,p):
 	c = 1
@@ -15,7 +13,7 @@ def sqandmult(a,b,p):
 	return c
 
 
-def pmns():
+def pmns(PSIZE):
 	p = random_prime(2**PSIZE)
 	n = floor(log(p,2)/64)+1
 	phi = 2**64
@@ -64,6 +62,7 @@ def pmns():
 					break
 
 			M = ZZ["X"](list(M))
+			print(f"M(X)={M}")
 
 			dM, uM, _ = xgcd(M, E)
 			dM = int(dM)
@@ -77,26 +76,27 @@ def pmns():
 			coeffs_B = [randrange(-rho+1,rho) for _ in range(n)]
 			A = ZZ["X"](coeffs_A)
 			B = ZZ["X"](coeffs_B)
-			print(f"A(X)={A}")
-			print(f"B(X)={B}")
+			# print(f"A(X)={A}")
+			# print(f"B(X)={B}")
 
 			gamma = int(gamma)
 
 			C = (A*B)%E
-			print(f"C(X)={C}")
+			# print(f"C(X)={C}")
 
 			Q = ((C*Mm1)%E)%phi
-			print(f"Q(X)={Q}")
+			# print(f"Q(X)={Q}")
 
 			Cp = (C - (Q*M)%E)/phi
 			Cp = ZZ["X"](Cp)
-			print(f"C'(X)={Cp}")
+			# print(f"C'(X)={Cp}")
 
+			print(f"E(X) = {E}")
 			result = (Cp(gamma)%p == (A(gamma)*B(gamma)*pow(phi,-1,p))%p)
 			print(f"Verif pour n({n}) et lambda({lambd}): {result}")
-			
+
 			return
 		
 		n += 1
 
-pmns()
+pmns(PSIZE = 200)
